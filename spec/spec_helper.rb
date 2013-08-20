@@ -21,3 +21,8 @@ require 'edx_client'
 require 'edx_controller'
 require 'edx_submission'
 
+require 'yaml'
+require 'fileutils'
+require 'fakefs/safe'
+require 'fakeweb'
+require 'fakeweb_matcher'
