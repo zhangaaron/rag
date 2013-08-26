@@ -32,7 +32,6 @@ class EdXClient
 
     @user_auth=conf['user_auth'].values
     @django_auth=conf['django_auth'].values
-    @api_key = conf['api_key']
 
     @controller = EdXController.new(*@django_auth,*@user_auth,@name, @endpoint)
     @halt = conf['halt']
@@ -70,7 +69,7 @@ class EdXClient
 
       comments= late_comments.to_s + " " + comments.to_s
       get_checkmark=true
-
+ 
       if score == 0 or score == 0.0
         get_checkmark=false
       end
@@ -84,31 +83,31 @@ class EdXClient
     raise
   end
 
-
+  
 #begin private functions
   private
   #this works for grouped assignments
   def load_due_date(assignment_part_sid)
-
+    
     unless @autograders.include?(assignment_part_sid)
       logger.fatal "Assignment part #{assignment_part_sid} not found!"
       raise "Assignment part #{assignment_part_sid} not found!"
     end
-    due= @autograders[assignment_part_sid][:due]
+    due= @autograders[assignment_part_sid][:due]   
     due ||= 20250910031500 #if no due date is given choose one in 2025 FIX Before 2025
   end
 
   def load_grace_period(assignment_part_sid)
-
+    
     unless @autograders.include?(assignment_part_sid)
       logger.fatal "Assignment part #{assignment_part_sid} not found!"
       raise "Assignment part #{assignment_part_sid} not found!"
     end
     grace= @autograders[assignment_part_sid][:grace_period]
-    grace=grace.to_i unless grace.nil?
+    grace=grace.to_i unless grace.nil?   
     grace ||= 8 #if no grace period is found choose 1 week +24 hours
   end
-
+  
   def generate_late_response(received_date, due_date,grace_period)
     received_time=DateTime.parse(received_date.to_s)
     due_time=DateTime.parse(due_date.to_s)
@@ -116,12 +115,12 @@ class EdXClient
     lateness=lateness.to_f #we might lose some precision but oh well
     #should really be a case statement
     return [1.0, "On Time"] unless lateness > 0
-
+    
     return [0.75, "Late assignment: score scaled by .75\n"] unless lateness > grace_period
-
-    return [0.5, "Between one and two grace periods late: score scaled by: .5\n"] unless lateness > (grace_period + 1)
-
-    return [0.0, "More than two grace periods late: no points awarded\n"]
+    
+    return [0.5, "Between one and two days late: score scaled by: .5\n"] unless lateness > (grace_period +1)
+    
+    return [0.0, "More than two days late: no points awarded\n"]
   end
 
   def load_spec(assignment_part_sid,part_id)
@@ -134,24 +133,24 @@ class EdXClient
       logger.fatal "Assignment part #{part_id} not found!"
       raise "Assignment part #{part_id} not found!"
     end
-
+  
     autograder = @autograders[assignment_part_sid][:parts][part_id]#prettify later
-
+    
     return [autograder["uri"],autograder["type"]] if autograder["uri"] !~ /^http/ # Assume that if uri doesn't start with http, then it is a local file path
 
     # If not in cache, download and add to cache
     if autograder[:cache].nil?
       spec_file = Tempfile.new('spec')
-      response = Net::HTTP.get_response(URI(autograder["uri"]))
+      response = Net::HTTP.get_response(URI(autograder[:uri]))
       if response.code !~ /2\d\d/
-        logger.fatal "Could not load the spec at #{autograder["uri"]}"
-        raise EdXClient::SpecNotFound, "Could not load the spec at #{autograder["uri"]}"
+        logger.fatal "Could not load the spec at #{autograder[:uri]}"
+        raise EdXClient::SpecNotFound, "Could not load the spec at #{autograder[:uri]}"
       end
       spec_file.write(response.body)
       spec_file.close
-      autograder[:cache] = spec_file.path
+      autograder[:cache] = spec_file
     end
-    return autograder[:cache], autograder["type"]
+    autograder[:cache].path
   end
 
   def run_autograder(submission, spec, grader_type)
@@ -231,7 +230,7 @@ class EdXClient
     end
   end
 
-  def load_configurations(conf_name=nil)
+  def self.load_configurations(conf_name=nil)
     config_path = 'config/conf.yml'
     unless File.file?(config_path)
       puts "Please copy conf.yml.example into conf.yml and configure the parameters"
@@ -249,18 +248,18 @@ class EdXClient
    # puts "dirName is #{dir_name}"
     Dir.mkdir('log/') unless File.directory?('log/')
     Dir.mkdir(dir_name) unless File.directory?(dir_name)
-
-    submission_attempt = 1
-    file_name=user_id.to_s + "_attempt_" + submission_attempt.to_s
+   
+    submission_attempt=1    
+    file_name=user_id.to_s + "_attempt_"+submission_attempt.to_s    
    # puts "file_name is #{file_name}"
     file_path=File.join(dir_name,file_name)
    # puts "file_path is #{file_path}"
 
     while File.exists?(file_path)
-
-      submission_attempt += 1
-
-      file_name=user_id.to_s + "_attempt_" + submission_attempt.to_s
+      submission_attempt +=1
+    
+      file_name=user_id.to_s + "_attempt_"+submission_attempt.to_s    
+    #  puts "file_name is #{file_name}"
       file_path=File.join(dir_name,file_name)
      # puts "file_path is #{file_path}"    
     end
@@ -269,10 +268,14 @@ class EdXClient
       out.write(content)
       out.flush
       out.close
-    rescue
+    rescue 
       logger.fatal "could not write submission for user= #{user_id} file_name #{file_name}"
     end
 
+  end
+
+  def continue_running(x)
+    true
   end
 
 
