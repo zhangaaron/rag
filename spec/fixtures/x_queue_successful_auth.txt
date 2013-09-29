@@ -1,0 +1,11 @@
+HTTP/1.1 200 OK
+Content-Type: text/html; charset=utf-8
+Date: Sun, 29 Sep 2013 19:44:00 GMT
+Server: nginx/1.1.19
+Set-Cookie: sessionid=c99dd163e7aa6d139a33daa13b85f5ad; expires=Sun, 13-Oct-2013 19:44:00 GMT; httponly; Max-Age=1209600; Path=/
+Vary: Accept-Encoding
+Vary: Cookie
+Content-Length: 42
+Connection: keep-alive
+
+{"content": "Logged in", "return_code": 0}
