@@ -29,18 +29,18 @@ class EdXClient
 
   def initialize(conf_name=nil,config_path='config/conf.yml')
     conf = EdXClient.load_configurations(conf_name,config_path)
-    @endpoint = conf['queue_uri'] 
+    #@endpoint = conf['queue_uri'] 
+
 
     @user_auth=conf['user_auth'].values
     @django_auth=conf['django_auth'].values
-
-    @controller = EdXController.new(*@django_auth,*@user_auth,@name, @endpoint)
+    @adapter_type = conf['adapter_type']
+    @submission_adapter = Object.const_get(@adapter_type).new(*@django_auth, *@user_auth, @name)
     @halt = conf['halt']
     @sleep_duration = conf['sleep_duration'].nil? ? 5*60 : conf['sleep_duration'] # in seconds
 
     @autograders_conf = conf['autograders_yml']
     # Load configuration file for assignment_id->spec map
-
     @autograders = EdXClient.init_autograders(@autograders_conf)
     @name = @autograders.values.first[:name]
   end
