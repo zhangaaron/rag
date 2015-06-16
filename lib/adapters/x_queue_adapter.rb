@@ -1,4 +1,5 @@
 require 'xqueue_ruby'
+require_relative 'adapter_interface'
 class XQueueAdapter < SubmissionAdapter
 
   def initialize(django_name, django_pass, user_name, user_pass, queue_name)

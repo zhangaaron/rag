@@ -13,6 +13,7 @@ require_relative 'edx_controller'
 require_relative 'edx_submission'
 require_relative 'auto_grader'
 require_relative 'auto_grader_subprocess'
+require_relative 'adapters/x_queue_adapter'
 
 class EdXClient
   include RagLogger
@@ -27,22 +28,23 @@ class EdXClient
   # directory and it must represent a hash from assignment_part_sid's to
   # spec URIs
 
+  DEFAULT_ADAPTER_NAME = 'XQueueAdapter'
   def initialize(conf_name=nil,config_path='config/conf.yml')
     conf = EdXClient.load_configurations(conf_name,config_path)
     #@endpoint = conf['queue_uri'] 
-
-
-    @user_auth=conf['user_auth'].values
-    @django_auth=conf['django_auth'].values
-    @adapter_type = conf['adapter_type']
-    @submission_adapter = Object.const_get(@adapter_type).new(*@django_auth, *@user_auth, @name)
-    @halt = conf['halt']
-    @sleep_duration = conf['sleep_duration'].nil? ? 5*60 : conf['sleep_duration'] # in seconds
-
     @autograders_conf = conf['autograders_yml']
     # Load configuration file for assignment_id->spec map
     @autograders = EdXClient.init_autograders(@autograders_conf)
     @name = @autograders.values.first[:name]
+
+    @user_auth=conf['user_auth'].values
+    @django_auth=conf['django_auth'].values
+    @adapter_type = conf['adapter_type'] || DEFAULT_ADAPTER_NAME
+    @submission_adapter = Object.const_get(@adapter_type).new(*@django_auth, *@user_auth, @name)
+    @halt = conf['halt']
+    @sleep_duration = conf['sleep_duration'].nil? ? 5*60 : conf['sleep_duration'] # in seconds
+
+
   end
 
   def run
