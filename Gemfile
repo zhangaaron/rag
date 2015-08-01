@@ -12,6 +12,7 @@ gem 'term-ansicolor'
 gem 'xqueue_ruby', :git => 'https://github.com/zhangaaron/xqueue-ruby'
 gem 'activerecord'
 gem 'ruby-filemagic'
+gem 'git'
 
 group :development, :testing do
   gem 'ZenTest'
