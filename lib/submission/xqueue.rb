@@ -12,6 +12,11 @@ module Submission
     STRFMT = "%Y-%m-%d-%H-%M-%S"
     def initialize(config_hash)
       super(config_hash)
+      # @halt = conf['halt']  # TODO: figure out what this is for
+      initialize_x_queue(config_hash)
+    end
+
+    def initialize_x_queue(config_hash)
       @x_queue = ::XQueue.new(*create_xqueue_hash(config_hash))
     end
 
